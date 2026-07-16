@@ -77,8 +77,7 @@ pub fn save_resolution(env: &Env, resolution: &Resolution) {
 
 // ─── Prediction cross-call stub ───────────────────────────────────────────────
 //
-// In production this would invoke the PredictionContract via a cross-contract
-// call client. For now we expose a helper that reads the data from shared
+// For now we expose a helper that reads the data from shared
 // persistent storage when both contracts are deployed together, or panics with
 // a clear error during standalone verifier testing.
 //
