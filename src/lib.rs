@@ -1,5 +1,9 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol};
+
+mod oracle;
+
+pub use oracle::{OracleContract, OracleError, OracleKey, PriceData};
 
 const INITIAL_REPUTATION: u64 = 100;
 
@@ -78,7 +82,7 @@ impl ReputationContract {
 #[cfg(test)]
 mod test {
     use super::*;
-    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{symbol_short, testutils::Address as _};
 
     #[test]
     fn test_reputation_flow_and_weighted_voting() {
