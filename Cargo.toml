@@ -1,5 +1,5 @@
 [package]
-name    = "prediction-oracle-verifier"
+name = "faucet-contract"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
@@ -8,20 +8,20 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-soroban-sdk = { version = "21.0.0", features = [] }
+soroban-sdk = "26"
 
 [dev-dependencies]
-soroban-sdk = { version = "21.0.0", features = ["testutils"] }
+soroban-sdk = { version = "26", features = ["testutils"] }
 
 [profile.release]
-opt-level     = "z"
+opt-level = "z"
 overflow-checks = true
-debug         = false
-strip         = "symbols"
+debug = false
+strip = "symbols"
 debug-assertions = false
-panic         = "abort"
+panic = "abort"
 codegen-units = 1
-lto           = true
+lto = true
 
 [profile.release-with-logs]
 inherits = "release"
