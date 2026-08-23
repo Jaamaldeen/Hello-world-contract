@@ -1,4 +1,8 @@
 #![no_std]
+
+pub mod wrapped_token;
+pub use wrapped_token::{WrapperContract, WrapperContractClient, WTokenKey};
+
 use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env};
 
 #[contracttype]
