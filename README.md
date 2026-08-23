@@ -1,255 +1,112 @@
-# Token Vault Contract
+# Faucet Contract
 
-A Soroban smart contract that implements a secure token vault with deposit, withdraw, balance accounting, and allowance support.
+This is a token faucet smart contract on Soroban. It dispenses test tokens to users while enforcing a claim limit and a cooldown period between claims.
 
-## Features
+## Public Functions
 
-- ✅ **Deposit** - Users can deposit tokens into the vault
-- ✅ **Withdraw** - Users can withdraw their deposited tokens
-- ✅ **Balance Accounting** - Track user balances within the vault
-- ✅ **Allowance Support** - Approve other addresses to spend on your behalf
-- ✅ **Pause/Unpause** - Admin can pause the vault in emergencies
-- ✅ **Events** - Emits events for deposits, withdrawals, and approvals
+### `initialize(env: Env, admin: Address, token: Address, claim_limit: i128, cooldown: u64)`
+Initializes the faucet contract with its settings.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `admin`: The administrator address of the faucet.
+  * `token`: The address of the token to be dispensed.
+  * `claim_limit`: The maximum amount of tokens allowed per claim.
+  * `cooldown`: The cooldown period in seconds required between claims for a single user.
+* **Returns**: None.
 
-## Contract Functions
-
-### `initialize(admin: Address, token: Address) -> Result<(), Error>`
-
-Initializes the vault with an admin address and the token contract address.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `admin` | `Address` | Address of the vault administrator |
-| `token` | `Address` | Address of the token contract |
-
-**Returns:** `Ok(())` on success, `Error::AlreadyInitialized` if already initialized.
+### `claim(env: Env, user: Address, amount: i128)`
+Allows a user to claim tokens from the faucet, up to the `claim_limit`, and enforces the `cooldown` period.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `user`: The address claiming the tokens. Must have authorization.
+  * `amount`: The amount of tokens requested.
+* **Returns**: None.
 
 ---
 
-### `deposit(from: Address, amount: i128) -> Result<(), Error>`
-
-Deposits tokens from `from` into the vault.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `from` | `Address` | Address depositing tokens (must be authenticated) |
-| `amount` | `i128` | Amount of tokens to deposit (must be > 0) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::InvalidAmount` - Amount must be > 0
-- `Error::VaultPaused` - Vault is paused
-- `Error::InsufficientBalance` - User doesn't have enough tokens
-
----
-
-### `withdraw(to: Address, amount: i128) -> Result<(), Error>`
-
-Withdraws tokens from the vault to `to`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `to` | `Address` | Address receiving the tokens (must be authenticated) |
-| `amount` | `i128` | Amount of tokens to withdraw (must be > 0) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::InvalidAmount` - Amount must be > 0
-- `Error::VaultPaused` - Vault is paused
-- `Error::InsufficientBalance` - User doesn't have enough vault balance
-
----
-
-### `balance(user: Address) -> i128`
-
-Returns the vault balance of a user.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `user` | `Address` | Address to query balance for |
-
-**Returns:** The user's vault balance (i128)
-
----
-
-### `total_balance() -> i128`
-
-Returns the total vault balance (sum of all user deposits).
-
-**Returns:** Total vault balance (i128)
-
----
-
-### `approve(owner: Address, spender: Address, amount: i128) -> Result<(), Error>`
-
-Approves `spender` to spend tokens on behalf of `owner`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `owner` | `Address` | Address owning the tokens (must be authenticated) |
-| `spender` | `Address` | Address allowed to spend tokens |
-| `amount` | `i128` | Amount allowed to spend (must be >= 0) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::InvalidAmount` - Amount must be >= 0
-
----
-
-### `allowance(owner: Address, spender: Address) -> i128`
-
-Returns the allowance from `owner` to `spender`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `owner` | `Address` | Address owning the tokens |
-| `spender` | `Address` | Address allowed to spend tokens |
-
-**Returns:** The allowance amount (i128)
-
----
-
-### `spend_allowance(spender: Address, owner: Address, amount: i128) -> Result<(), Error>`
-
-Spends tokens from `owner`'s balance via `spender`'s allowance.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `spender` | `Address` | Address spending the tokens (must be authenticated) |
-| `owner` | `Address` | Address owning the tokens |
-| `amount` | `i128` | Amount to spend (must be > 0) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::InvalidAmount` - Amount must be > 0
-- `Error::InsufficientAllowance` - Not enough allowance
-- `Error::InsufficientBalance` - Not enough balance
-
----
-
-### `pause(admin: Address) -> Result<(), Error>`
-
-Pauses the vault (admin only).
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `admin` | `Address` | Admin address (must be authenticated) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::Unauthorized` - Caller is not the admin
-
----
-
-### `unpause(admin: Address) -> Result<(), Error>`
-
-Unpauses the vault (admin only).
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `admin` | `Address` | Admin address (must be authenticated) |
-
-**Returns:** `Ok(())` on success.
-
-**Errors:**
-- `Error::Unauthorized` - Caller is not the admin
-
----
-
-### `is_paused() -> bool`
-
-Returns whether the vault is paused.
-
-**Returns:** `true` if paused, `false` otherwise.
-
----
-
-### `get_config() -> Result<VaultConfig, Error>`
-
-Returns the vault configuration.
-
-**Returns:** `VaultConfig` containing owner, token, and paused status.
-
-**Errors:**
-- `Error::NotInitialized` - Vault not initialized
-
----
-
-### `get_admin() -> Result<Address, Error>`
-
-Returns the admin address.
-
-**Returns:** Admin address.
-
-**Errors:**
-- `Error::NotInitialized` - Vault not initialized
-
----
-
-## Error Codes
-
-| Code | Error | Description |
-|------|-------|-------------|
-| 1 | `NotInitialized` | Contract not initialized yet |
-| 2 | `AlreadyInitialized` | Contract already initialized |
-| 3 | `InvalidAmount` | Invalid amount (must be > 0) |
-| 4 | `InsufficientBalance` | Insufficient balance |
-| 5 | `InsufficientAllowance` | Insufficient allowance |
-| 6 | `VaultPaused` | Vault is paused |
-| 7 | `Unauthorized` | Unauthorized access |
-| 8 | `TokenNotFound` | Token not found |
-| 9 | `TransferFailed` | Transfer failed |
-
----
-
-## Events
-
-| Event | Description |
-|-------|-------------|
-| `deposit(user, amount)` | Emitted when tokens are deposited |
-| `withdraw(user, amount)` | Emitted when tokens are withdrawn |
-| `approval(owner, spender, amount)` | Emitted when an allowance is set |
-
----
-
-## Testing
-
-Run the tests:
-
-```bash
-cargo test
-Output:
-
-text
-test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
-Build
-Build the contract:
-
-bash
-cargo build --target wasm32-unknown-unknown --release
-Usage Example
-rust
-// Initialize vault
-client.initialize(&admin, &token);
-
-// Deposit tokens
-client.deposit(&user, &1000);
-
-// Check balance
-assert_eq!(client.balance(&user), 1000);
-
-// Approve spender
-client.approve(&user, &spender, &500);
-
-// Spender uses allowance
-client.spend_allowance(&spender, &user, &200);
-
-// Withdraw tokens
-client.withdraw(&user, &300);
-License
-MIT
+# Wrapped Token Contract
+
+A mint/burn wrapper that turns an existing Soroban/Stellar asset (e.g. USDC) into a Soroban-native token. Users deposit the underlying asset and receive wrapped tokens 1:1 via `wrap`, and can redeem them back at any time via `unwrap`. The admin can additionally `mint` wrapped tokens directly and any holder can `burn` their own tokens.
+
+## Public Functions
+
+### `initialize(env: Env, admin: Address, underlying: Address, name: String, symbol: String, decimals: u32)`
+Initializes the wrapper contract. Must be called exactly once after deployment.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `admin`: Administrator address (permitted to call `mint`).
+  * `underlying`: Address of the existing Soroban token being wrapped (e.g. USDC contract address).
+  * `name`: Display name for the wrapped token (e.g. `"Wrapped USDC"`).
+  * `symbol`: Short ticker symbol for the wrapped token (e.g. `"wUSDC"`).
+  * `decimals`: Decimal precision — normally matches the underlying asset (7 for Stellar assets).
+* **Returns**: None.
+
+### `wrap(env: Env, caller: Address, amount: i128) -> i128`
+Deposits `amount` of the underlying asset from `caller` into the contract and mints an equal amount of wrapped tokens to `caller` (1:1 peg). The caller must have authorized the transfer of the underlying asset.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `caller`: Address performing the wrap. Must authorize this call.
+  * `amount`: Number of underlying tokens to deposit. Must be positive.
+* **Returns**: The new wrapped-token balance of `caller` after wrapping.
+
+### `unwrap(env: Env, caller: Address, amount: i128) -> i128`
+Burns `amount` of wrapped tokens held by `caller` and returns an equal amount of the underlying asset (1:1 peg).
+* **Parameters**:
+  * `env`: The execution environment.
+  * `caller`: Address performing the unwrap. Must authorize this call.
+  * `amount`: Number of wrapped tokens to burn and redeem. Must be positive and ≤ caller's wrapped balance.
+* **Returns**: The new wrapped-token balance of `caller` after unwrapping.
+
+### `mint(env: Env, admin: Address, recipient: Address, amount: i128)`
+Admin-only. Mints wrapped tokens directly to `recipient` without requiring a deposit of the underlying asset. Useful for incentive programs or testing.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `admin`: The contract administrator. Must authorize this call.
+  * `recipient`: Address that receives the newly minted wrapped tokens.
+  * `amount`: Number of wrapped tokens to mint. Must be positive.
+* **Returns**: None.
+
+### `burn(env: Env, caller: Address, amount: i128)`
+Permanently destroys `amount` of wrapped tokens held by `caller`. No underlying asset is returned — use `unwrap` if you want to reclaim the underlying.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `caller`: Address whose wrapped tokens will be burned. Must authorize this call.
+  * `amount`: Number of wrapped tokens to burn. Must be positive and ≤ caller's wrapped balance.
+* **Returns**: None.
+
+### `balance(env: Env, account: Address) -> i128`
+Returns the wrapped-token balance of `account`.
+* **Parameters**:
+  * `env`: The execution environment.
+  * `account`: The address to query.
+* **Returns**: Balance as `i128` (0 for unknown accounts).
+
+### `total_supply(env: Env) -> i128`
+Returns the total number of wrapped tokens currently in circulation.
+* **Parameters**:
+  * `env`: The execution environment.
+* **Returns**: Total supply as `i128`.
+
+### `name(env: Env) -> String`
+Returns the human-readable name of the wrapped token (set at initialization).
+* **Parameters**:
+  * `env`: The execution environment.
+* **Returns**: Token name as a Soroban `String`.
+
+### `symbol(env: Env) -> String`
+Returns the ticker symbol of the wrapped token (set at initialization).
+* **Parameters**:
+  * `env`: The execution environment.
+* **Returns**: Token symbol as a Soroban `String`.
+
+### `decimals(env: Env) -> u32`
+Returns the decimal precision of the wrapped token (set at initialization).
+* **Parameters**:
+  * `env`: The execution environment.
+* **Returns**: Decimal places as `u32`.
+
+### `underlying(env: Env) -> Address`
+Returns the address of the underlying Soroban asset being wrapped.
+* **Parameters**:
+  * `env`: The execution environment.
+* **Returns**: The underlying token contract address.
