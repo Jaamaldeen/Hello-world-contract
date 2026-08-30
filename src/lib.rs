@@ -3,6 +3,13 @@
 pub mod wrapped_token;
 pub use wrapped_token::{WrapperContract, WrapperContractClient, WTokenKey};
 
+pub mod moderation;
+pub use moderation::{
+    initialize_moderation, add_moderator, remove_moderator, flag_content, review_flag,
+    appeal_flag, resolve_appeal, get_flag, get_flag_count, is_moderator, ContentFlag,
+    FlagStatus, FlagReason, ModerationError, ModerationKey,
+};
+
 use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env};
 
 #[contracttype]
